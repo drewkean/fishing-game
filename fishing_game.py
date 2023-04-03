@@ -136,12 +136,16 @@ facing_left = False
 facing_right = False
 bobber_down = False
 caught_cow = False
+reeling = False
+new_reel = False
+reel_bar_height = 100
 ufo_front = pygame.image.load("ufo_new_front.png")
 ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
 ufo_right = pygame.image.load("ufo_new_right.png")
 wait_time = 0
 index = 0
+reel_height_change = 1
 
 cow = {
     "cow": ["Brown", "Brown Spotted", "Black", "Regular Cow", "Golden"],
@@ -173,7 +177,16 @@ def catch_alert():
         print("index: " + str(index))
 
 def reel_game():
-    
+    #surrounding
+    pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x + 100, player.rect.y - 100, 100, 200))
+    pygame.draw.rect(screen, (50, 50, 50), pygame.Rect(player.rect.x + 180, player.rect.y - 100, 20, 200))
+    pygame.draw.rect(screen, (50, 50, 50), pygame.Rect(player.rect.x + 140, player.rect.y - 100, 20, 200))
+
+    #reeling bar
+    pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x + 160, reel_bar_height - 100, 20, 50))
+
+
+
 
 # -------- Main Program Loop -----------
 while not done:
@@ -213,6 +226,8 @@ while not done:
                     print("spacebar")
                     bobber_down = False
                     caught_cow = False
+                    reeling = False
+                    reel_height_change = 1
 
                     
             if event.type == pygame.KEYUP:
@@ -266,6 +281,39 @@ while not done:
     if (bobber_down and click and wait_time < 0 and wait_time > -100):
         print("YOU caught THE COW")
         caught_cow = True
+        reeling = True
+    
+    if (reeling):
+
+        #if bar is at top or bottom, set change to 1
+        if (reel_bar_height >= player.rect.y + 150 or reel_bar_height <= player.rect.y):
+            reel_height_change = 1
+
+
+        if (click):
+            reel_height_change -= 0.0006
+            #limiting max reel height change speed to 0.96
+            if (reel_height_change < 0.96):
+                reel_height_change = 0.96
+        
+            reel_bar_height *= reel_height_change
+            
+        
+        if (not click):
+            reel_height_change += 0.0006
+            #limiting max reel fall speed to 1.04
+            if (reel_height_change > 1.04):
+                reel_height_change = 1.04
+            
+            reel_bar_height *= reel_height_change
+
+        if (reel_bar_height > player.rect.y + 150):
+            reel_bar_height = player.rect.y + 150
+        if (reel_bar_height < player.rect.y):
+            reel_bar_height = player.rect.y
+
+        #print("reel_height_change: " + str(reel_height_change))
+        
         reel_game()
 
 
