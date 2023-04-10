@@ -4,6 +4,7 @@ from pygame import mixer
 import math
 import time
 import random
+pygame.font.init()
  
 # Define some colors
 BLACK = (  0,   0,   0)
@@ -18,8 +19,8 @@ mixer.init()
 #bad_hit = mixer.Sound("bad_hit.mp3")
 #mixer.music.set_volume(1)
 
-screen_width = 700
-screen_height = 400
+screen_width = 1920
+screen_height = 1080
 
 class Block(pygame.sprite.Sprite):
     """
@@ -143,6 +144,7 @@ ufo_front = pygame.image.load("ufo_new_front.png")
 ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
 ufo_right = pygame.image.load("ufo_new_right.png")
+brown_cow = pygame.image.load("cow1.png")
 wait_time = 0
 index = 0
 reel_height_change = 1
@@ -152,7 +154,14 @@ cow = {
     "description": ["brown milk is brown", "this brown cow has some spots!", "black cow haha", "normal cow", "golden milk is heavy"]
 }
 
+def fps_counter():
+    fps = clock.get_fps()
+    my_font = pygame.font.SysFont('Calibri', 30)
+    text_surface = my_font.render(str(round(fps)), False, (0, 0, 0))
+    screen.blit(text_surface, (0,0))
+
 def cast_distance(length):
+    if (not reeling):
         pygame.draw.rect(screen, BLACK, pygame.Rect(player.rect.x + 95, player.rect.y - 10, 20, 60))
         pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x + 100, player.rect.y+50-length, 10, length))
 
@@ -185,8 +194,12 @@ def reel_game():
     #reeling bar
     pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x + 160, reel_bar_height - 100, 20, 50))
 
+    #cow time
+    big_brown_cow = pygame.transform.scale(brown_cow, (50, 50))
+    screen.blit(big_brown_cow, (player.rect.x + 150, player.rect.y))
 
 
+clock = pygame.time.Clock()
 
 # -------- Main Program Loop -----------
 while not done:
@@ -240,6 +253,8 @@ while not done:
                 elif event.key == pygame.K_w:
                     player.changespeed(0, 2)
 
+    fps_counter()
+
     if event.type == pygame.MOUSEBUTTONDOWN:
         
         click = True
@@ -265,21 +280,22 @@ while not done:
             bobber_down = True
         click = False
             #click_hold_counter = 0
-
+   
     if (click):
-        if (click_hold_counter < 0):
-            increase = True
-        elif (click_hold_counter > 60):
-            increase = False
+        if (not reeling):
+            if (click_hold_counter < 0):
+                increase = True
+            elif (click_hold_counter > 60):
+                increase = False
 
-        if (increase): click_hold_counter += 1
-        else: click_hold_counter -= 1
+            if (increase): click_hold_counter += 1
+            else: click_hold_counter -= 1
 
-        print(click_hold_counter)
-        cast_distance(click_hold_counter)
+            print(click_hold_counter)
+            cast_distance(click_hold_counter)
 
     if (bobber_down and click and wait_time < 0 and wait_time > -100):
-        print("YOU caught THE COW")
+        #print("YOU caught THE COW")
         caught_cow = True
         reeling = True
     
@@ -312,7 +328,7 @@ while not done:
         if (reel_bar_height < player.rect.y):
             reel_bar_height = player.rect.y
 
-        #print("reel_height_change: " + str(reel_height_change))
+        print("reel_height_change: " + str(reel_height_change))
         
         reel_game()
 
@@ -325,10 +341,8 @@ while not done:
     #good_blocks_hit_list = pygame.sprite.spritecollide(player, good_block_list, True)
 
 
-    pygame.font.init()
-    my_font = pygame.font.SysFont('Calibri', 30)
-    text_surface = my_font.render("Score: " + str(score), False, (0, 0, 0))
-    screen.blit(text_surface, (0,0))
+   
+    
     
     if (event.type == pygame.MOUSEBUTTONDOWN):
         cast_distance(click_hold_counter)
@@ -338,8 +352,7 @@ while not done:
     #all_sprites_list.draw(screen)
     all_sprites_list.update()
 
-    
-    
+
     ufo_front = pygame.transform.scale(ufo_front, (50, 50))
     ufo_back = pygame.transform.scale(ufo_back, (50, 50))
     ufo_left = pygame.transform.scale(ufo_left, (50, 50))
@@ -360,5 +373,8 @@ while not done:
  
     # Limit to 60 frames per second
     clock.tick(60)
+
+    #displays average fps
+    
  
 pygame.quit()
