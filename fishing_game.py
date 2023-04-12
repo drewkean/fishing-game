@@ -19,8 +19,8 @@ mixer.init()
 #bad_hit = mixer.Sound("bad_hit.mp3")
 #mixer.music.set_volume(1)
 
-screen_width = 1920
-screen_height = 1080
+screen_width = 1280
+screen_height = 720
 
 class Block(pygame.sprite.Sprite):
     """
@@ -300,33 +300,41 @@ while not done:
         reeling = True
     
     if (reeling):
+        changing_direction = False
+        if (reel_bar_height >= player.rect.y + 150):
+            if (reel_height_change > 2):
+                reel_height_change = reel_height_change * -0.75
+                print("CHANGING DIRECTIon")
+                changing_direction = True
+            else:
+                reel_bar_height = player.rect.y + 150
+                print("resetting height")
+        if (reel_bar_height <= player.rect.y):
+            reel_bar_height = player.rect.y
 
         #if bar is at top or bottom, set change to 1
-        if (reel_bar_height >= player.rect.y + 150 or reel_bar_height <= player.rect.y):
-            reel_height_change = 1
-
+        if ((reel_bar_height >= player.rect.y + 150 or reel_bar_height <= player.rect.y) and not changing_direction):
+            reel_height_change = 0
 
         if (click):
-            reel_height_change -= 0.0006
-            #limiting max reel height change speed to 0.96
-            if (reel_height_change < 0.96):
-                reel_height_change = 0.96
+            reel_height_change -= 0.2
+            #limiting max reel height change speed
+            if (reel_height_change < -5.00):
+                reel_height_change = -5.00
         
-            reel_bar_height *= reel_height_change
+            reel_bar_height += reel_height_change
             
         
         if (not click):
-            reel_height_change += 0.0006
-            #limiting max reel fall speed to 1.04
-            if (reel_height_change > 1.04):
-                reel_height_change = 1.04
+            reel_height_change += 0.2
+            #limiting max reel fall speed
+            if (reel_height_change > 5.0):
+                reel_height_change = 5.0
             
-            reel_bar_height *= reel_height_change
+            reel_bar_height += reel_height_change
 
-        if (reel_bar_height > player.rect.y + 150):
-            reel_bar_height = player.rect.y + 150
-        if (reel_bar_height < player.rect.y):
-            reel_bar_height = player.rect.y
+        
+                
 
         print("reel_height_change: " + str(reel_height_change))
         
