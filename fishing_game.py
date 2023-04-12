@@ -139,7 +139,6 @@ bobber_down = False
 caught_cow = False
 reeling = False
 new_reel = False
-reel_bar_height = 100
 ufo_front = pygame.image.load("ufo_new_front.png")
 ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
@@ -147,17 +146,22 @@ ufo_right = pygame.image.load("ufo_new_right.png")
 brown_cow = pygame.image.load("cow1.png")
 wait_time = 0
 index = 0
+reel_bar_height = 100
 reel_height_change = 1
+cow_height = 100
+cow_height_change = 0
+
 
 cow = {
     "cow": ["Brown", "Brown Spotted", "Black", "Regular Cow", "Golden"],
-    "description": ["brown milk is brown", "this brown cow has some spots!", "black cow haha", "normal cow", "golden milk is heavy"]
+    "description": ["brown milk is brown", "this brown cow has some spots!", "black cow haha", "normal cow", "golden milk is heavy"],
+    "difficulty": [70, 1, 1, 1, 1]
 }
 
 def fps_counter():
     fps = clock.get_fps()
     my_font = pygame.font.SysFont('Calibri', 30)
-    text_surface = my_font.render(str(round(fps)), False, (0, 0, 0))
+    text_surface = my_font.render(str(round(fps)) + " fps", False, (0, 0, 0))
     screen.blit(text_surface, (0,0))
 
 def cast_distance(length):
@@ -186,6 +190,81 @@ def catch_alert():
         print("index: " + str(index))
 
 def reel_game():
+    #---------logic for player----------
+    global reel_bar_height
+    global reel_height_change
+    changing_direction = False
+    if (reel_bar_height >= player.rect.y + 150):
+        if (reel_height_change > 2):
+            reel_height_change = reel_height_change * -0.75
+            #print("CHANGING DIRECTIon")
+            changing_direction = True
+        else:
+            reel_bar_height = player.rect.y + 150
+            #print("resetting height")
+    if (reel_bar_height <= player.rect.y):
+        reel_bar_height = player.rect.y
+
+    #if bar is at top or bottom, set change to 1
+    if ((reel_bar_height >= player.rect.y + 150 or reel_bar_height <= player.rect.y) and not changing_direction):
+        reel_height_change = 0
+
+    if (click):
+        reel_height_change -= 0.2
+        #limiting max reel height change speed
+        if (reel_height_change < -5.00):
+            reel_height_change = -5.00
+    
+        reel_bar_height += reel_height_change
+        
+    if (not click):
+        reel_height_change += 0.2
+        #limiting max reel fall speed
+        if (reel_height_change > 5.0):
+            reel_height_change = 5.0
+        
+        reel_bar_height += reel_height_change
+
+    #print("reel_height_change: " + str(reel_height_change))
+    
+
+    #-----------cow time------------
+    global cow_height
+    global cow_height_change
+    big_brown_cow = pygame.transform.scale(brown_cow, (50, 50))
+    print("player y", player.rect.y)
+    
+    #reset cow position because im lazy to properly spawn in cow correctly
+    if (cow_height < player.rect.y - 125 or cow_height > player.rect.y + 80):
+        cow_height = player.rect.y
+
+    #every frame, cow approaches zero change
+    if (cow_height_change > 0):
+        cow_height_change -= 0.03
+    else:
+        cow_height_change += 0.03
+    """
+    if (cow_height_change < 0.03 or cow_height_change > -0.03):
+        cow_height_change = 0
+    """
+
+    move_randomness = random.randint(1, cow["difficulty"][0])
+    up_or_down = random.randint(1, 2)
+    if (move_randomness == 1):
+        if (up_or_down == 1):
+            cow_height_change = 2.5
+        else:
+            cow_height_change = -2.5
+
+    #cow height limit
+    if (cow_height <= player.rect.y - 112):
+        cow_height = player.rect.y - 112
+    elif (cow_height >= player.rect.y + 65):
+        cow_height = player.rect.y + 65
+
+    cow_height += cow_height_change
+
+    #-----------visuals------------
     #surrounding
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x + 100, player.rect.y - 100, 100, 200))
     pygame.draw.rect(screen, (50, 50, 50), pygame.Rect(player.rect.x + 180, player.rect.y - 100, 20, 200))
@@ -194,10 +273,11 @@ def reel_game():
     #reeling bar
     pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x + 160, reel_bar_height - 100, 20, 50))
 
-    #cow time
-    big_brown_cow = pygame.transform.scale(brown_cow, (50, 50))
-    screen.blit(big_brown_cow, (player.rect.x + 150, player.rect.y))
+    #cow
+    screen.blit(big_brown_cow, (player.rect.x + 145, cow_height))
 
+    #progress bar
+    pygame.draw.rect(screen, GREEN, pygame.Rect(player.rect.x + 100, player.rect.y, 20, 20))
 
 clock = pygame.time.Clock()
 
@@ -300,57 +380,14 @@ while not done:
         reeling = True
     
     if (reeling):
-        changing_direction = False
-        if (reel_bar_height >= player.rect.y + 150):
-            if (reel_height_change > 2):
-                reel_height_change = reel_height_change * -0.75
-                print("CHANGING DIRECTIon")
-                changing_direction = True
-            else:
-                reel_bar_height = player.rect.y + 150
-                print("resetting height")
-        if (reel_bar_height <= player.rect.y):
-            reel_bar_height = player.rect.y
-
-        #if bar is at top or bottom, set change to 1
-        if ((reel_bar_height >= player.rect.y + 150 or reel_bar_height <= player.rect.y) and not changing_direction):
-            reel_height_change = 0
-
-        if (click):
-            reel_height_change -= 0.2
-            #limiting max reel height change speed
-            if (reel_height_change < -5.00):
-                reel_height_change = -5.00
-        
-            reel_bar_height += reel_height_change
-            
-        
-        if (not click):
-            reel_height_change += 0.2
-            #limiting max reel fall speed
-            if (reel_height_change > 5.0):
-                reel_height_change = 5.0
-            
-            reel_bar_height += reel_height_change
-
-        
-                
-
-        print("reel_height_change: " + str(reel_height_change))
-        
         reel_game()
-
-
+    
 
     #fish_index = random.randint(0, 2)
     #print(fishdict["fish"][fish_index] + " | Description: " + fishdict["description"][fish_index])
      
     # See if the player block has collided with anything.
     #good_blocks_hit_list = pygame.sprite.spritecollide(player, good_block_list, True)
-
-
-   
-    
     
     if (event.type == pygame.MOUSEBUTTONDOWN):
         cast_distance(click_hold_counter)
