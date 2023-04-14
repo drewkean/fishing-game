@@ -88,8 +88,6 @@ class Player(pygame.sprite.Sprite):
         if (self.rect.y > screen_height - 15):
             self.rect.y = screen_height - 15
         
-
- 
 # Initialize Pygame
 pygame.init()
  
@@ -150,6 +148,8 @@ reel_bar_height = 100
 reel_height_change = 1
 cow_height = 100
 cow_height_change = 0
+progress_bar_length = 50
+win_status = 0
 
 
 cow = {
@@ -187,13 +187,28 @@ def catch_alert():
     index += 1
     if ((index > 0 and index < 5) or (index > 10 and index < 15)):
         pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x + 40, player.rect.y - 10, 20, 20))
-        print("index: " + str(index))
+        #print("index: " + str(index))
 
 def reel_game():
-    #---------logic for player----------
     global reel_bar_height
     global reel_height_change
     changing_direction = False
+    global win_status
+
+    #---------win logic------------
+
+    if (reel_bar_height > 200):
+        #win
+        win_status = 2
+    elif (reel_bar_height <= 0):
+        #lose
+        win_status = 1
+    else:
+        #currently playing
+        win_status = 0
+
+    #---------logic for player---------
+
     if (reel_bar_height >= player.rect.y + 150):
         if (reel_height_change > 2):
             reel_height_change = reel_height_change * -0.75
@@ -229,10 +244,12 @@ def reel_game():
     
 
     #-----------cow time------------
+
     global cow_height
     global cow_height_change
+    global progress_bar_length
     big_brown_cow = pygame.transform.scale(brown_cow, (50, 50))
-    print("player y", player.rect.y)
+    #print("player y", player.rect.y)
     
     #reset cow position because im lazy to properly spawn in cow correctly
     if (cow_height < player.rect.y - 125 or cow_height > player.rect.y + 80):
@@ -264,7 +281,15 @@ def reel_game():
 
     cow_height += cow_height_change
 
+    #---------progress bar logic--------
+
+    if (cow_height + 33 > reel_bar_height - 100  and cow_height + 17 < reel_bar_height - 50):
+        progress_bar_length += 0.5
+    elif progress_bar_length > 0:
+        progress_bar_length -= 0.5
+
     #-----------visuals------------
+
     #surrounding
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x + 100, player.rect.y - 100, 100, 200))
     pygame.draw.rect(screen, (50, 50, 50), pygame.Rect(player.rect.x + 180, player.rect.y - 100, 20, 200))
@@ -277,8 +302,15 @@ def reel_game():
     screen.blit(big_brown_cow, (player.rect.x + 145, cow_height))
 
     #progress bar
-    pygame.draw.rect(screen, GREEN, pygame.Rect(player.rect.x + 100, player.rect.y, 20, 20))
+    pygame.draw.rect(screen, GREEN, pygame.Rect(player.rect.x + 100, player.rect.y - progress_bar_length + 100, 20, progress_bar_length))
 
+    #guidelines for adjusting
+    """
+    pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x, reel_bar_height - 100, 100, 1))
+    pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x, reel_bar_height - 50, 100, 1))
+    pygame.draw.rect(screen, GREEN, pygame.Rect(player.rect.x, cow_height + 25, 100, 1))
+    """
+    
 clock = pygame.time.Clock()
 
 # -------- Main Program Loop -----------
@@ -287,7 +319,7 @@ while not done:
     for event in pygame.event.get(): 
         if event.type == pygame.QUIT: 
             done = True
-        if (not click):
+        if (not click and not reeling):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     facing_left = True
@@ -316,11 +348,12 @@ while not done:
                 elif event.key == pygame.K_r:
                     index = 0
                     click_hold_counter = 0
-                    print("spacebar")
+                    print("reset")
                     bobber_down = False
                     caught_cow = False
                     reeling = False
                     reel_height_change = 1
+                    progress_bar_length = 50
 
                     
             if event.type == pygame.KEYUP:
@@ -356,7 +389,7 @@ while not done:
             if (wait_time <= 0):
                 #index = 0
                 catch_alert()
-            print("wait time: " + str(wait_time))
+            #print("wait time: " + str(wait_time))
             bobber_down = True
         click = False
             #click_hold_counter = 0
@@ -378,25 +411,22 @@ while not done:
         #print("YOU caught THE COW")
         caught_cow = True
         reeling = True
-    
+        
     if (reeling):
-        reel_game()
-    
-
-    #fish_index = random.randint(0, 2)
-    #print(fishdict["fish"][fish_index] + " | Description: " + fishdict["description"][fish_index])
-     
-    # See if the player block has collided with anything.
-    #good_blocks_hit_list = pygame.sprite.spritecollide(player, good_block_list, True)
+        if (win_status == 0):
+            reel_game()
+        elif (win_status == 1):
+            #lose function
+            placeholder
+        else:
+            #win function
+            
+            
     
     if (event.type == pygame.MOUSEBUTTONDOWN):
         cast_distance(click_hold_counter)
 
-
-    # Draw all the spites
-    #all_sprites_list.draw(screen)
     all_sprites_list.update()
-
 
     ufo_front = pygame.transform.scale(ufo_front, (50, 50))
     ufo_back = pygame.transform.scale(ufo_back, (50, 50))
@@ -412,14 +442,8 @@ while not done:
     if (facing_right):
         screen.blit(ufo_right, (player.rect.x,player.rect.y))
 
- 
-    # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
  
-    # Limit to 60 frames per second
     clock.tick(60)
 
-    #displays average fps
-    
- 
 pygame.quit()
