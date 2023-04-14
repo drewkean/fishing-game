@@ -137,6 +137,8 @@ bobber_down = False
 caught_cow = False
 reeling = False
 new_reel = False
+gotten_cow_number = False
+reel_win = False
 ufo_front = pygame.image.load("ufo_new_front.png")
 ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
@@ -193,14 +195,17 @@ def reel_game():
     global reel_bar_height
     global reel_height_change
     changing_direction = False
+    global cow_height
+    global cow_height_change
     global win_status
+    global progress_bar_length
 
     #---------win logic------------
 
-    if (reel_bar_height > 200):
+    if (progress_bar_length > 200):
         #win
         win_status = 2
-    elif (reel_bar_height <= 0):
+    elif (progress_bar_length <= 0):
         #lose
         win_status = 1
     else:
@@ -242,12 +247,8 @@ def reel_game():
 
     #print("reel_height_change: " + str(reel_height_change))
     
-
     #-----------cow time------------
-
-    global cow_height
-    global cow_height_change
-    global progress_bar_length
+    
     big_brown_cow = pygame.transform.scale(brown_cow, (50, 50))
     #print("player y", player.rect.y)
     
@@ -310,6 +311,30 @@ def reel_game():
     pygame.draw.rect(screen, RED, pygame.Rect(player.rect.x, reel_bar_height - 50, 100, 1))
     pygame.draw.rect(screen, GREEN, pygame.Rect(player.rect.x, cow_height + 25, 100, 1))
     """
+
+def reel_win_textbox():
+    global reeling
+    global gotten_cow_number
+    global reel_win
+    reeling = False
+    reel_win = True
+    if (not gotten_cow_number):
+        cow_number = random.randint(0, 4)
+        gotten_cow_number = True
+        print("I GOT THE COW NUMBER")
+    print("you caught a cow")
+    pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
+    my_font = pygame.font.SysFont('Calibri', 15)
+    cow_description = my_font.render(cow["description"][cow_number], False, (0, 0, 0))
+    screen.blit(cow_description, (200, 200))
+
+def reel_lose():
+    global reeling
+    print("You lost the cow.")
+    reeling = False
+
+
+    
     
 clock = pygame.time.Clock()
 
@@ -354,6 +379,7 @@ while not done:
                     reeling = False
                     reel_height_change = 1
                     progress_bar_length = 50
+                    gotten_cow_number = False
 
                     
             if event.type == pygame.KEYUP:
@@ -404,7 +430,7 @@ while not done:
             if (increase): click_hold_counter += 1
             else: click_hold_counter -= 1
 
-            print(click_hold_counter)
+            #print(click_hold_counter)
             cast_distance(click_hold_counter)
 
     if (bobber_down and click and wait_time < 0 and wait_time > -100):
@@ -413,16 +439,12 @@ while not done:
         reeling = True
         
     if (reeling):
-        if (win_status == 0):
-            reel_game()
-        elif (win_status == 1):
-            #lose function
-            placeholder
-        else:
-            #win function
-            
-            
-    
+        reel_game()
+
+    if (win_status == 2):
+        reel_win_textbox()
+
+
     if (event.type == pygame.MOUSEBUTTONDOWN):
         cast_distance(click_hold_counter)
 
