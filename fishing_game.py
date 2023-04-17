@@ -316,6 +316,7 @@ def reel_win_textbox():
     global reeling
     global gotten_cow_number
     global reel_win
+    global cow_number
     reeling = False
     reel_win = True
     if (not gotten_cow_number):
@@ -326,15 +327,12 @@ def reel_win_textbox():
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
     my_font = pygame.font.SysFont('Calibri', 15)
     cow_description = my_font.render(cow["description"][cow_number], False, (0, 0, 0))
-    screen.blit(cow_description, (200, 200))
+    screen.blit(cow_description, (player.rect.x, player.rect.y - 180))
 
 def reel_lose():
     global reeling
     print("You lost the cow.")
     reeling = False
-
-
-    
     
 clock = pygame.time.Clock()
 
