@@ -73,6 +73,8 @@ class Player(pygame.sprite.Sprite):
         """ Change the speed of the player"""
         self.change_x += x
         self.change_y += y
+    
+
  
     def update(self):
         """ Find a new position for the player"""
@@ -155,7 +157,7 @@ win_status = 0
 
 
 cow = {
-    "cow": ["Brown", "Brown Spotted", "Black", "Regular Cow", "Golden"],
+    "type": ["Brown", "Brown Spotted", "Black", "Regular Cow", "Golden"],
     "description": ["brown milk is brown", "this brown cow has some spots!", "black cow haha", "normal cow", "golden milk is heavy"],
     "difficulty": [70, 1, 1, 1, 1]
 }
@@ -324,15 +326,59 @@ def reel_win_textbox():
         gotten_cow_number = True
         print("I GOT THE COW NUMBER")
     print("you caught a cow")
-    pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
+    #pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
     my_font = pygame.font.SysFont('Calibri', 15)
+    cow_type = my_font.render(cow["type"][cow_number], False, (0, 0, 0))
     cow_description = my_font.render(cow["description"][cow_number], False, (0, 0, 0))
-    screen.blit(cow_description, (player.rect.x, player.rect.y - 180))
+    cow_difficulty = my_font.render(str(cow["difficulty"][cow_number]), False, (0, 0, 0))
+    total_text = ("Congrats! You caught a ", cow_type, ". ", cow_description, ". It has a difficulty of ", cow_difficulty, ".")
+    #screen.blit(cow_description, (player.rect.x, player.rect.y - 180))
+
+    textbox_box = pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200)
+    drawText(screen, total_text, BLACK, textbox_box, my_font)
 
 def reel_lose():
     global reeling
     print("You lost the cow.")
     reeling = False
+
+def drawText(surface, text, color, rect, font, aa=False, bkg=None):
+    rect = pygame.Rect(rect)
+    y = rect.top
+    lineSpacing = -2
+
+    # get the height of the font
+    fontHeight = font.size("Tg")[1]
+
+    while text:
+        i = 1
+
+        # determine if the row of text will be outside our area
+        if y + fontHeight > rect.bottom:
+            break
+
+        # determine maximum width of line
+        while font.size(text[:i])[0] < rect.width and i < len(text):
+            i += 1
+
+        # if we've wrapped the text, then adjust the wrap to the last word      
+        if i < len(text): 
+            i = text.rfind(" ", 0, i) + 1
+
+        # render the line and blit it to the surface
+        if bkg:
+            image = font.render(text[:i], 1, color, bkg)
+            image.set_colorkey(bkg)
+        else:
+            image = font.render(text[:i], aa, color)
+
+        surface.blit(image, (rect.left, y))
+        y += fontHeight + lineSpacing
+
+        # remove the text we just blitted
+        text = text[i:]
+
+    return text
     
 clock = pygame.time.Clock()
 
@@ -381,18 +427,21 @@ while not done:
 
                     
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_a:
-                    player.changespeed(2, 0)
-                elif event.key == pygame.K_d:
-                    player.changespeed(-2, 0)
-                elif event.key == pygame.K_s:
-                    player.changespeed(0, -2)
-                elif event.key == pygame.K_w:
-                    player.changespeed(0, 2)
+                if (not player.change_x == 0 or not player.change_y == 0):
+                    if event.key == pygame.K_a:
+                        player.changespeed(2, 0)
+                    elif event.key == pygame.K_d:
+                        player.changespeed(-2, 0)
+                    elif event.key == pygame.K_s:
+                        player.changespeed(0, -2)
+                    elif event.key == pygame.K_w:
+                        player.changespeed(0, 2)
 
     fps_counter()
 
     if event.type == pygame.MOUSEBUTTONDOWN:
+        player.change_x = 0
+        player.change_y = 0
         
         click = True
         gotten_wait = False
