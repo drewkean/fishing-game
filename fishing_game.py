@@ -146,6 +146,7 @@ ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
 ufo_right = pygame.image.load("ufo_new_right.png")
 brown_cow = pygame.image.load("cow1.png")
+download = pygame.image.load("download.jpg")
 wait_time = 0
 index = 0
 reel_bar_height = 100
@@ -157,9 +158,9 @@ win_status = 0
 
 
 cow = {
-    "type": ["Brown", "Brown Spotted", "Black", "Regular Cow", "Golden"],
-    "description": ["brown milk is brown", "this brown cow has some spots!", "black cow haha", "normal cow", "golden milk is heavy"],
-    "difficulty": [70, 1, 1, 1, 1]
+    "type": ["Brown", "Brown Spotted", "Black", "Regular", "Golden"],
+    "description": ["This milk is brown and tastes like dirt.", "This brown cow has some spots!", "Black cow haha", "This is a typical normal cow", "The milk is made out of gold, very heavy."],
+    "difficulty": [70, 75, 30, 40, 100]
 }
 
 def fps_counter():
@@ -324,16 +325,10 @@ def reel_win_textbox():
     if (not gotten_cow_number):
         cow_number = random.randint(0, 4)
         gotten_cow_number = True
-        print("I GOT THE COW NUMBER")
-    print("you caught a cow")
-    #pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
-    my_font = pygame.font.SysFont('Calibri', 15)
-    cow_type = my_font.render(cow["type"][cow_number], False, (0, 0, 0))
-    cow_description = my_font.render(cow["description"][cow_number], False, (0, 0, 0))
-    cow_difficulty = my_font.render(str(cow["difficulty"][cow_number]), False, (0, 0, 0))
-    total_text = ("Congrats! You caught a ", cow_type, ". ", cow_description, ". It has a difficulty of ", cow_difficulty, ".")
-    #screen.blit(cow_description, (player.rect.x, player.rect.y - 180))
-
+   
+    pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
+    my_font = pygame.font.SysFont('Calibri', 25)
+    total_text = "Congrats! You caught a " + cow["type"][cow_number] + ". " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + "."
     textbox_box = pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200)
     drawText(screen, total_text, BLACK, textbox_box, my_font)
 
@@ -414,6 +409,8 @@ while not done:
                     facing_left = False
                     facing_right = False
                     player.changespeed(0, -2)
+                elif event.key == pygame.K_t:
+                    progress_bar_length = 100
                 elif event.key == pygame.K_r:
                     index = 0
                     click_hold_counter = 0
@@ -436,6 +433,9 @@ while not done:
                         player.changespeed(0, -2)
                     elif event.key == pygame.K_w:
                         player.changespeed(0, 2)
+
+    download = pygame.transform.scale(download, (1280, 720))
+    screen.blit(download, (0, 0))
 
     fps_counter()
 
@@ -496,11 +496,12 @@ while not done:
         cast_distance(click_hold_counter)
 
     all_sprites_list.update()
-
+    
     ufo_front = pygame.transform.scale(ufo_front, (50, 50))
     ufo_back = pygame.transform.scale(ufo_back, (50, 50))
     ufo_left = pygame.transform.scale(ufo_left, (50, 50))
     ufo_right = pygame.transform.scale(ufo_right, (50, 50))
+    
 
     if (facing_up):
         screen.blit(ufo_back, (player.rect.x,player.rect.y))
