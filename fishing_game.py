@@ -145,8 +145,12 @@ ufo_front = pygame.image.load("ufo_new_front.png")
 ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
 ufo_right = pygame.image.load("ufo_new_right.png")
-brown_cow = pygame.image.load("cow1.png")
-download = pygame.image.load("download.jpg")
+brown_cow = pygame.image.load("brown_cow.png")
+golden_cow = pygame.image.load("golden_cow.png")
+brown_spotted_cow = pygame.image.load("brown_spotted_cow.png")
+black_cow = pygame.image.load("black_cow.png")
+suited_cow = pygame.image.load("suited_cow.png")
+background = pygame.image.load("background.jpg")
 wait_time = 0
 index = 0
 reel_bar_height = 100
@@ -155,12 +159,13 @@ cow_height = 100
 cow_height_change = 0
 progress_bar_length = 50
 win_status = 0
+reel_win_time = 0
 
 
 cow = {
-    "type": ["Brown", "Brown Spotted", "Black", "Regular", "Golden"],
-    "description": ["This milk is brown and tastes like dirt.", "This brown cow has some spots!", "Black cow haha", "This is a typical normal cow", "The milk is made out of gold, very heavy."],
-    "difficulty": [70, 75, 30, 40, 100]
+    "type": ["Brown", "Brown Spotted", "Black", "Suited", "Golden"],
+    "description": ["This milk is brown and tastes like dirt.", "This brown cow has some spots!", "Black cow haha", "Cow of Wall Street", "The milk is made out of gold- very heavy."],
+    "difficulty": [50, 75, 30, 85, 100]
 }
 
 def fps_counter():
@@ -280,8 +285,8 @@ def reel_game():
     #cow height limit
     if (cow_height <= player.rect.y - 112):
         cow_height = player.rect.y - 112
-    elif (cow_height >= player.rect.y + 65):
-        cow_height = player.rect.y + 65
+    elif (cow_height >= player.rect.y + 63):
+        cow_height = player.rect.y + 63
 
     cow_height += cow_height_change
 
@@ -315,22 +320,44 @@ def reel_game():
     pygame.draw.rect(screen, GREEN, pygame.Rect(player.rect.x, cow_height + 25, 100, 1))
     """
 
+brown_cow = pygame.transform.scale(brown_cow, (100, 100))
+brown_spotted_cow = pygame.transform.scale(brown_spotted_cow, (100, 100))
+black_cow = pygame.transform.scale(black_cow, (100, 100))
+suited_cow = pygame.transform.scale(suited_cow, (50, 50))
+golden_cow = pygame.transform.scale(golden_cow, (100, 100))
+
+
 def reel_win_textbox():
     global reeling
     global gotten_cow_number
     global reel_win
     global cow_number
+    global reel_win_time
     reeling = False
     reel_win = True
     if (not gotten_cow_number):
         cow_number = random.randint(0, 4)
         gotten_cow_number = True
+
+    reel_win_time += 1
    
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
     my_font = pygame.font.SysFont('Calibri', 25)
-    total_text = "Congrats! You caught a " + cow["type"][cow_number] + ". " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + "."
+    total_text = "Congrats! You caught a " + cow["type"][cow_number] + " cow. " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + "."
     textbox_box = pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200)
     drawText(screen, total_text, BLACK, textbox_box, my_font)
+
+    if (cow_number == 0):
+        screen.blit(brown_cow, (player.rect.x + 110, player.rect.y - 80))
+    elif (cow_number == 1):
+        screen.blit(brown_spotted_cow, (player.rect.x + 110, player.rect.y - 80))
+    elif (cow_number == 2):
+        screen.blit(black_cow, (player.rect.x + 110, player.rect.y - 80))
+    elif (cow_number == 3):
+        screen.blit(suited_cow, (player.rect.x + 135, player.rect.y - 55))
+    else:
+        screen.blit(golden_cow, (player.rect.x + 110, player.rect.y - 80))
+
 
 def reel_lose():
     global reeling
@@ -434,8 +461,8 @@ while not done:
                     elif event.key == pygame.K_w:
                         player.changespeed(0, 2)
 
-    download = pygame.transform.scale(download, (1280, 720))
-    screen.blit(download, (0, 0))
+    background = pygame.transform.scale(background, (1280, 720))
+    screen.blit(background, (0, 0))
 
     fps_counter()
 
@@ -453,7 +480,7 @@ while not done:
         
 
     if event.type == pygame.MOUSEBUTTONUP:
-        if (not caught_cow):
+        if (not caught_cow and not reeling):
             cast_line(click_hold_counter)
             if (not gotten_wait):
                 wait_time = get_wait()
@@ -485,12 +512,26 @@ while not done:
         caught_cow = True
         reeling = True
         
-    if (reeling):
+    if (reeling and not win_status == 2):
         reel_game()
 
     if (win_status == 2):
         reel_win_textbox()
-
+        if (click and reel_win_time > 60):
+            reeling = False
+            win_status = 0
+            bobber_down = False
+            caught_cow = False
+            reel_win_time = 0
+    elif (win_status == 1):
+        reeling = False
+        win_status = 0
+        bobber_down = False
+        caught_cow = False
+        reel_win_time = 0
+        
+        
+    
 
     if (event.type == pygame.MOUSEBUTTONDOWN):
         cast_distance(click_hold_counter)
