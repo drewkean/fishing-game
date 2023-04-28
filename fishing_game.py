@@ -141,6 +141,7 @@ reeling = False
 new_reel = False
 gotten_cow_number = False
 reel_win = False
+gotten_score = False
 ufo_front = pygame.image.load("ufo_new_front.png")
 ufo_back = pygame.image.load("ufo_new_back.png")
 ufo_left = pygame.image.load("ufo_new_left.png")
@@ -160,12 +161,15 @@ cow_height_change = 0
 progress_bar_length = 50
 win_status = 0
 reel_win_time = 0
+total_score = 0
+score = 0
 
 
 cow = {
     "type": ["Brown", "Brown Spotted", "Black", "Suited", "Golden"],
     "description": ["This milk is brown and tastes like dirt.", "This brown cow has some spots!", "Black cow haha", "Cow of Wall Street", "The milk is made out of gold- very heavy."],
-    "difficulty": [50, 75, 30, 85, 100]
+    "difficulty": [50, 75, 30, 85, 100],
+    "base_score": [50, 75, 30, 120, 150]
 }
 
 def fps_counter():
@@ -333,17 +337,26 @@ def reel_win_textbox():
     global reel_win
     global cow_number
     global reel_win_time
+    global total_score
+    global gotten_score
+    global score
     reeling = False
     reel_win = True
+
     if (not gotten_cow_number):
         cow_number = random.randint(0, 4)
         gotten_cow_number = True
 
     reel_win_time += 1
-   
+
+    if (gotten_score == False):
+        score = cow["base_score"][cow_number] + random.randint(0, 30)
+        total_score += score
+        gotten_score = True
+
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
     my_font = pygame.font.SysFont('Calibri', 25)
-    total_text = "Congrats! You caught a " + cow["type"][cow_number] + " cow. " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + "."
+    total_text = "Congrats! You caught a " + cow["type"][cow_number] + " cow. " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + ". It is worth" + str(score) + " points."
     textbox_box = pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200)
     drawText(screen, total_text, BLACK, textbox_box, my_font)
 
@@ -466,6 +479,10 @@ while not done:
 
     fps_counter()
 
+    my_font = pygame.font.SysFont('Calibri', 30)
+    text_surface = my_font.render("score" + (str(total_score)), False, (0, 0, 0))
+    screen.blit(text_surface, (0, 40))
+
     if event.type == pygame.MOUSEBUTTONDOWN:
         player.change_x = 0
         player.change_y = 0
@@ -523,12 +540,14 @@ while not done:
             bobber_down = False
             caught_cow = False
             reel_win_time = 0
+            gotten_score = False
     elif (win_status == 1):
         reeling = False
         win_status = 0
         bobber_down = False
         caught_cow = False
         reel_win_time = 0
+        gotten_score = False
         
         
     
