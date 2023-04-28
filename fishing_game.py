@@ -152,6 +152,8 @@ brown_spotted_cow = pygame.image.load("brown_spotted_cow.png")
 black_cow = pygame.image.load("black_cow.png")
 suited_cow = pygame.image.load("suited_cow.png")
 background = pygame.image.load("background.jpg")
+sell_unlit = pygame.image.load("sell_unlit.png")
+sell_lit = pygame.image.load("sell_lit.png")
 wait_time = 0
 index = 0
 reel_bar_height = 100
@@ -163,6 +165,8 @@ win_status = 0
 reel_win_time = 0
 total_score = 0
 score = 0
+sell_counter = 0
+hidden_score = 0
 
 
 cow = {
@@ -330,6 +334,12 @@ black_cow = pygame.transform.scale(black_cow, (100, 100))
 suited_cow = pygame.transform.scale(suited_cow, (50, 50))
 golden_cow = pygame.transform.scale(golden_cow, (100, 100))
 
+def update_score():
+    global total_score
+    global hidden_score
+    total_score += hidden_score
+    hidden_score = 0
+
 
 def reel_win_textbox():
     global reeling
@@ -340,6 +350,7 @@ def reel_win_textbox():
     global total_score
     global gotten_score
     global score
+    global hidden_score
     reeling = False
     reel_win = True
 
@@ -351,7 +362,7 @@ def reel_win_textbox():
 
     if (gotten_score == False):
         score = cow["base_score"][cow_number] + random.randint(0, 30)
-        total_score += score
+        hidden_score += score
         gotten_score = True
 
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
@@ -483,6 +494,20 @@ while not done:
     text_surface = my_font.render("score" + (str(total_score)), False, (0, 0, 0))
     screen.blit(text_surface, (0, 40))
 
+    sell_unlit = pygame.transform.scale(sell_unlit, (195, 150))
+    sell_lit = pygame.transform.scale(sell_lit, (195, 150))
+
+    if (sell_counter < 60):
+        screen.blit(sell_lit, (1050, 50))
+    elif(sell_counter >= 120):
+        sell_counter = 0
+        screen.blit(sell_unlit, (1050, 50))
+    else:
+        screen.blit(sell_unlit, (1050, 50))
+    sell_counter += 1
+
+    screen.blit(ufo_right, (player.rect.x,player.rect.y))
+
     if event.type == pygame.MOUSEBUTTONDOWN:
         player.change_x = 0
         player.change_y = 0
@@ -549,7 +574,8 @@ while not done:
         reel_win_time = 0
         gotten_score = False
         
-        
+    if (player.rect.x > 1050 and player.rect.y < 50):
+        update_score()
     
 
     if (event.type == pygame.MOUSEBUTTONDOWN):
