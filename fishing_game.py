@@ -83,12 +83,12 @@ class Player(pygame.sprite.Sprite):
 
         if (self.rect.x < 0):
             self.rect.x = 0
-        if (self.rect.x > screen_width - 15):
-            self.rect.x = screen_width - 15
+        if (self.rect.x > screen_width - 50):
+            self.rect.x = screen_width - 50
         if (self.rect.y < 0):
             self.rect.y = 0
-        if (self.rect.y > screen_height - 15):
-            self.rect.y = screen_height - 15
+        if (self.rect.y > screen_height - 50):
+            self.rect.y = screen_height - 50
         
 # Initialize Pygame
 pygame.init()
@@ -179,7 +179,7 @@ cow = {
 def fps_counter():
     fps = clock.get_fps()
     my_font = pygame.font.SysFont('Calibri', 30)
-    text_surface = my_font.render(str(round(fps)) + " fps", False, (0, 0, 0))
+    text_surface = my_font.render(str(round(fps)) + " fps", False, (255, 255, 255))
     screen.blit(text_surface, (0,0))
 
 def cast_distance(length):
@@ -366,8 +366,8 @@ def reel_win_textbox():
         gotten_score = True
 
     pygame.draw.rect(screen, (150, 150, 150), pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200))
-    my_font = pygame.font.SysFont('Calibri', 25)
-    total_text = "Congrats! You caught a " + cow["type"][cow_number] + " cow. " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + ". It is worth" + str(score) + " points."
+    my_font = pygame.font.SysFont('Calibri', 24)
+    total_text = "Congrats! You caught a " + cow["type"][cow_number] + " cow. " + cow["description"][cow_number] + ". It has a difficulty of " + str(cow["difficulty"][cow_number]) + ". It is worth " + str(score) + " points."
     textbox_box = pygame.Rect(player.rect.x, player.rect.y - 200, 200, 200)
     drawText(screen, total_text, BLACK, textbox_box, my_font)
 
@@ -425,6 +425,35 @@ def drawText(surface, text, color, rect, font, aa=False, bkg=None):
         text = text[i:]
 
     return text
+
+def reset_parameters():
+    global index
+    global click_hold_counter
+    global bobber_down
+    global caught_cow
+    global reeling
+    global reel_height_change
+    global progress_bar_length
+    global gotten_cow_number
+    global win_status
+    global reel_win_time
+    global gotten_score
+
+    index = 0
+    click_hold_counter = 0
+    print("reset")
+    bobber_down = False
+    caught_cow = False
+    reeling = False
+    reel_height_change = 1
+    progress_bar_length = 50
+    gotten_cow_number = False
+    reeling = False
+    win_status = 0
+    bobber_down = False
+    caught_cow = False
+    reel_win_time = 0
+    gotten_score = False
     
 clock = pygame.time.Clock()
 
@@ -491,7 +520,7 @@ while not done:
     fps_counter()
 
     my_font = pygame.font.SysFont('Calibri', 30)
-    text_surface = my_font.render("score" + (str(total_score)), False, (0, 0, 0))
+    text_surface = my_font.render("Score: " + (str(total_score)), False, (255, 255, 255))
     screen.blit(text_surface, (0, 40))
 
     sell_unlit = pygame.transform.scale(sell_unlit, (195, 150))
@@ -524,6 +553,7 @@ while not done:
     if event.type == pygame.MOUSEBUTTONUP:
         if (not caught_cow and not reeling):
             cast_line(click_hold_counter)
+            pygame.event.set_blocked(pygame.MOUSEMOTION)
             if (not gotten_wait):
                 wait_time = get_wait()
                 gotten_wait = True
@@ -556,25 +586,16 @@ while not done:
         
     if (reeling and not win_status == 2):
         reel_game()
+        #pygame.event.set_allowed(pygame.MOUSEMOTION)
 
     if (win_status == 2):
         reel_win_textbox()
         if (click and reel_win_time > 60):
-            reeling = False
-            win_status = 0
-            bobber_down = False
-            caught_cow = False
-            reel_win_time = 0
-            gotten_score = False
+            reset_parameters()
     elif (win_status == 1):
-        reeling = False
-        win_status = 0
-        bobber_down = False
-        caught_cow = False
-        reel_win_time = 0
-        gotten_score = False
+        reset_parameters()
         
-    if (player.rect.x > 1050 and player.rect.y < 50):
+    if (player.rect.x > 1000 and player.rect.y < 180):
         update_score()
     
 
